@@ -25,6 +25,7 @@ class ofApp : public ofBaseApp{
 		void mouseDragged(int x, int y, int button);        
 		void mouseReleased(int x, int y, int button);
 		void windowResized(int w, int h);
+        void exit();
 		
 		void setVideoPlaypause();
 		void drawVideo();
@@ -108,8 +109,5 @@ class ofApp : public ofBaseApp{
         unsigned int		num_video_items;
 
 		// settings
-		ofxXmlSettings	settings;
-
-		// version number
-		string			ACMIVod_version_number;
+        //ofxXmlSettings	settings;
 };

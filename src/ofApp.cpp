@@ -486,6 +486,12 @@ void ofApp::getMetaData(string path, videoItem& vid )
 }
 
 //--------------------------------------------------------------
+void ofApp::exit()
+{
+    gui.saveToFile("gui.xml");
+}
+
+//--------------------------------------------------------------
 void ofApp::setupGui()
 {
     gui.setup("settings");
