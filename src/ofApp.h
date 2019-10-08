@@ -20,26 +20,23 @@ class ofApp : public ofBaseApp{
 		void setup();
 		void update();
 		void draw();
-
 		void keyPressed(int key);
-		void keyReleased(int key);
 		void mouseMoved(int x, int y );
-		void mouseDragged(int x, int y, int button);
-		void mousePressed(int x, int y, int button);
+		void mouseDragged(int x, int y, int button);        
 		void mouseReleased(int x, int y, int button);
-		void mouseEntered(int x, int y);
-		void mouseExited(int x, int y);
 		void windowResized(int w, int h);
-		void dragEvent(ofDragInfo dragInfo);
-		void gotMessage(ofMessage msg);
 		
-		// new methods for ACMIVod
 		void setVideoPlaypause();
 		void drawVideo();
 		void drawMenu();
-		void launchVideo(int videoId);
+        void launchVideo(unsigned int videoId);
 		void returnToMenu();
 		void updateMenuItems();
+        void getMetaData(string path, videoItem& vid);
+        void setupGui();
+        void setupVideos();
+        void setupIcons();
+        void setupFonts();
 
 		ofVideoPlayer	video_player;
 		float			video_width;
@@ -111,7 +108,7 @@ class ofApp : public ofBaseApp{
 		// video tiles
 
 		vector<videoItem>	video_items;
-		int					num_video_items;
+        unsigned int		num_video_items;
 
 		// settings
 		ofxXmlSettings	settings;

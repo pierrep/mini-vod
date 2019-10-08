@@ -3,134 +3,30 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 
-	ACMIVod_version_number = "ACMI Video on Demand v 0.0.1.1";
-
 	ofBackground(0, 0, 0);
 	ofSetVerticalSync(true);
 
-	ofSetWindowTitle("ACMI VoD");
+    setupVideos();
+    setupGui();
+    setupIcons();
+    setupFonts();
 
-	// read the directory for the images
-	// we know that they are named in seq
-	
-	string path = "videos/";
-	string imageFileTemp;
-	string metaDataFileTemp;
-	ofDirectory dir(path);
-	dir.allowExt("mp4");
-
-	int nFiles = dir.listDir();
-	if (nFiles) {
-
-		for (int i = 0; i<dir.size(); i++) {
-
-			// add the image to the vector
-			
-			ofLog(OF_LOG_SILENT) << "Video found: " << dir.getPath(i);
-
-			videoItem vid;
-
-			vid.videoFile = dir.getPath(i);
-			imageFileTemp = dir.getPath(i);
-			
-			vid.imageFile = imageFileTemp.replace(imageFileTemp.end() - 4, imageFileTemp.end(), ".jpg");
-			
-			ifstream vidMetaData;
-			
-			metaDataFileTemp = dir.getPath(i);
-			string fileToOpen = metaDataFileTemp.replace(metaDataFileTemp.end() - 4, metaDataFileTemp.end(), ".txt");
-
-			vidMetaData.open( ofToDataPath(fileToOpen).c_str() );
-			ofLog(OF_LOG_SILENT) << "metadata file opened: " << vidMetaData.is_open();
-
-			getline(vidMetaData, vid.title);
-			ofLog(OF_LOG_SILENT) << "video title found: " << vid.title;
-			
-			getline(vidMetaData, vid.description);
-			ofLog(OF_LOG_SILENT) << "video description found: " << vid.description;
-		
-			vidMetaData.close();
-						
-			video_items.push_back(vid);
-
-		}
-
-	}
-	else ofLog(OF_LOG_WARNING) << "Could not find folder";
-
-	// gui
-		
-	gui.setup("settings");
-	gui.add(controlbar_show_length.set("controbar_show_length", 3000.0, 0.0, 10000.0));
-	gui.add(controlbar_anim_length.set("controlbar_anim_length", 500.0, 0.0, 10000.0));
-	gui.add(icon_padding.set("icon_padding", 10.0, 0.0, 50.0));
-	gui.add(fonts_space_between_words.set("fonts_space_between_words", 8.5, 0.0, 50.0));
-	gui.add(menu_margin_x.set("menu_margin_x", 0.15, 0.0, 1.0));
-	gui.add(menu_margin_y.set("menu_margin_y", 0.1, 0.0, 1.0));
-	gui.add(fonts_title_color.set("font_title_color", ofColor(252, 69, 19), ofColor(0, 0), ofColor(255, 255)));
-	gui.add(icon_highlight_color.set("icon_highlight_color", ofColor(252, 69, 19), ofColor(0, 0), ofColor(255, 255)));
-	gui.add(menu_background_filename.set("menu_background_img_filename", "backgrounds/background_menu.jpg"));
-	gui.add(font_main_normal_filename.set("font_main_regular_filename_ttf", "fonts/opensans-regular.ttf"));
-	gui.add(font_main_italic_filename.set("font_main_italic_filename_ttf", "fonts/opensans-italic.ttf"));
-	gui.add(font_stats_filename.set("font_stats_filename_ttf", "fonts/opensans-regular.ttf"));
-		
-	// Attempt to load XML settings from file
-	gui.loadFromFile("settings.xml");
-
-	// set up video sizes
-
-	video_width = ofGetWidth();
-	video_height = ofGetWidth() / 1.777776;
-	video_pos_y = (ofGetHeight() / 2) - (video_height / 2);
-	
-	// icons
-	icon_size = 64;
-	icon_size_larger = 80;
-	icon_play_select.load("icons/play_select.png");
-	icon_play.load("icons/play.png");
-	icon_pause.load("icons/pause.png");
-	icon_back.load("icons/back.png");
-	icon_play_select.resize(icon_size_larger, icon_size_larger);
-	icon_play.resize(icon_size, icon_size);
-	icon_pause.resize(icon_size, icon_size);
-	icon_back.resize(icon_size, icon_size);
-	icon_playpause_hover = false;
-
-	controlbar_width = ofGetWidth();
-	controlbar_height = icon_size * 2.5;
-	controlbar_pos_y = ofGetHeight();
-
-	// fonts
-
-	//old OF default is 96 - but this results in fonts looking larger than in other programs. 
-	ofTrueTypeFont::setGlobalDpi(72);
-	
-	font_stats.load(font_stats_filename, 14, true, true);
-	font_stats.setLineHeight(18.0f);
-	font_stats.setLetterSpacing(1.037);
-
-	font_main_normal.load(font_main_normal_filename, 24, true, true);
-	font_main_normal.setLineHeight(30.0f);
-	font_main_normal.setLetterSpacing(1);
-
-	font_main_italic.load(font_main_italic_filename, 24, true, true);
-	font_main_italic.setLineHeight(30.0f);
-	font_main_italic.setLetterSpacing(1);
+    // set up video sizes
+    video_width = ofGetWidth();
+    video_height = ofGetWidth() / 1.777776f;
+    video_pos_y = (ofGetHeight() / 2) - (video_height / 2);
 
 	// stats and controls
 	show_stats = false;
 	show_controls = false;
 
 	// timers
-
 	controlbar_timer_end = false;
 	controlbar_start_time = ofGetElapsedTimeMillis();
-
 	menu_timer_end = false;
 	menu_start_time = ofGetElapsedTimeMillis();
 
 	// menu
-
 	show_menu = true;
 
 	num_video_items = video_items.size();
@@ -140,7 +36,7 @@ void ofApp::setup(){
 
 // Launch Video (called from menu)
 //--------------------------------------------------------------
-void ofApp::launchVideo(int videoId) {
+void ofApp::launchVideo(unsigned int videoId) {
 	video_player.load(video_items[videoId].videoFile);
 	video_player.setLoopState(OF_LOOP_NONE);
 	video_player.play();
@@ -156,10 +52,10 @@ void ofApp::launchVideo(int videoId) {
 
 void ofApp::updateMenuItems() {
 
-	menu_background.load(menu_background_filename);
-	menu_background.resize(ofGetHeight() * 1.777777778, ofGetHeight());
+    menu_background.load(static_cast<string>(menu_background_filename));
+    menu_background.resize(ofGetHeight() * 1.777777778f, ofGetHeight());
 
-	for (int i = 0; i < num_video_items; i++) {
+    for (size_t i = 0; i < num_video_items; i++) {
 		video_items[i].itemBox.x = 0 + (ofGetWidth() * menu_margin_x);
 		video_items[i].itemBox.width = ofGetWidth() - (ofGetWidth() * (menu_margin_x * 2));
 		video_items[i].itemBox.height = ((ofGetHeight() - (ofGetHeight() * (menu_margin_y * 2))) / num_video_items) - 4;
@@ -168,7 +64,7 @@ void ofApp::updateMenuItems() {
 		video_items[i].posterImage.load(video_items[i].imageFile);
 		// then check that it's loaded
 		if (video_items[i].posterImage.isAllocated()) {
-			video_items[i].posterImage.resize((video_items[i].itemBox.height - 30) * 1.77777778, video_items[i].itemBox.height - 30);
+            video_items[i].posterImage.resize((video_items[i].itemBox.height - 30) * 1.77777778f, video_items[i].itemBox.height - 30);
 		}
 	}
 }
@@ -196,7 +92,7 @@ void ofApp::returnToMenu() {
 //--------------------------------------------------------------
 void ofApp::update(){
 	video_player.update();
-	if (video_player.getPosition() > 0.9999 && show_menu == false) {
+    if (video_player.getPosition() > 0.9999f && show_menu == false) {
 		returnToMenu();
 	}
 
@@ -293,7 +189,7 @@ void ofApp::drawVideo() {
 	// draw button
 	ofSetColor(255);
 	if (paused) {
-		icon_play.draw(icon_playpause_pos_x, icon_playpause_pos_y);
+        icon_play.draw(icon_playpause_pos_x, icon_playpause_pos_y);
 	}
 	else {
 		icon_pause.draw(icon_playpause_pos_x, icon_playpause_pos_y);
@@ -314,7 +210,7 @@ void ofApp::drawMenu() {
 
 	vector<float> menu_timers;
 
-	for (int i = 0; i < num_video_items; i++) {
+    for (size_t i = 0; i < num_video_items; i++) {
 		// easing algorithm from http://robertpenner.com/easing/
 		// and: http://gizma.com/easing/
 	
@@ -325,7 +221,7 @@ void ofApp::drawMenu() {
 		// Quadratic easing out
 		float time_current, b_start_value, change_value, duration;
 		
-		int j;
+        unsigned int j;
 
 		j = num_video_items - i;
 
@@ -344,8 +240,8 @@ void ofApp::drawMenu() {
 		//float anim_timer = change_value * time_current * time_current + b_start_value;
 		float anim_timer = -change_value * time_current * (time_current-2) + b_start_value;
 
-		if (anim_timer > 1.0) {
-			anim_timer = 1.0;
+        if (anim_timer > 1.0f) {
+            anim_timer = 1.0f;
 		}
 
 		// Make it go in the other direction!
@@ -357,7 +253,7 @@ void ofApp::drawMenu() {
 	// position variables for drawing strings
 	float string_x, string_y;
 
-	if (menu_timer >= 1500.0) {
+    if (menu_timer >= 1500.0f) {
 		menu_timer_end = true;
 	}
 
@@ -366,14 +262,14 @@ void ofApp::drawMenu() {
 	ofSetColor(255, 255, 255, 255 * fade_in_timer);
 	menu_background.draw(0, 0);
 
-	for (int i = 0; i < num_video_items; i++) {
+    for (size_t i = 0; i < num_video_items; i++) {
 
 		// animate the video tiles into position
-		if (menu_timer <= 1500.0) {
+        if (menu_timer <= 1500.0f) {
 			// set destination position
 			video_items[i].itemBox.x = 0 + (ofGetWidth() * menu_margin_x);
 			// apply animation to that position
-			video_items[i].itemBox.x -= ((ofGetWidth() * 1.5) * menu_timers[i]);
+            video_items[i].itemBox.x -= ((ofGetWidth() * 1.5f) * menu_timers[i]);
 		}
 		else {
 			video_items[i].itemBox.x = 0 + (ofGetWidth() * menu_margin_x);
@@ -396,7 +292,7 @@ void ofApp::drawMenu() {
 		string_x = 0;
 		string_y = 0;
 		vector<string> splitString = ofSplitString(video_items[i].title, " ");
-		for (int j = 0; j < splitString.size(); j++) {
+        for (size_t j = 0; j < splitString.size(); j++) {
 			if (splitString[j][0] == '_') {
 				font_main_italic.drawString(splitString[j].substr(1, splitString[j].size() - 2), video_items[i].itemBox.x + 30 + video_items[i].posterImage.getWidth() + string_x, video_items[i].itemBox.y + 35);
 				string_x += font_main_italic.stringWidth(splitString[j].substr(1, splitString[j].size() - 2)) + fonts_space_between_words;
@@ -412,7 +308,7 @@ void ofApp::drawMenu() {
 		string_x = 0;
 		string_y = 0;
 		// loop through the results
-		for (int j = 0; j<splitString.size(); j++) {
+        for (size_t j = 0; j<splitString.size(); j++) {
 			if (splitString[j][0] == '_') {
 				font_main_italic.drawString(splitString[j].substr(1, splitString[j].size() - 2), video_items[i].itemBox.x + 30 + video_items[i].posterImage.getWidth() + string_x, video_items[i].itemBox.y + 65 + (string_y * 30));
 				string_x += font_main_italic.stringWidth(splitString[j].substr(1, splitString[j].size() - 2)) + fonts_space_between_words;
@@ -461,9 +357,6 @@ void ofApp::draw(){
 		font_stats.drawString("Video width: " + to_string(video_width), 30, ofGetHeight() - 60);
 		font_stats.drawString("Video height: " + to_string(video_height), 30, ofGetHeight() - 30);
 
-		// draw version number
-		font_stats.drawString(ACMIVod_version_number, ofGetWidth() - font_stats.stringWidth(ACMIVod_version_number) - 30, 30);
-
 	}
 
 }
@@ -480,7 +373,7 @@ void ofApp::keyPressed(int key){
 		ofToggleFullscreen();
 		// update video sizes
 		video_width = ofGetWidth();
-		video_height = ofGetWidth() / 1.777776;
+        video_height = ofGetWidth() / 1.777776f;
 		video_pos_y = (ofGetHeight() / 2) - (video_height / 2);
 
 		// update control bar size
@@ -493,11 +386,6 @@ void ofApp::keyPressed(int key){
 		show_stats = !show_stats;
 		break;
 	}
-}
-
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-
 }
 
 //--------------------------------------------------------------
@@ -531,11 +419,6 @@ void ofApp::mouseDragged(int x, int y, int button){
 	}
 }
 
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
-
-
-}
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
@@ -571,7 +454,7 @@ void ofApp::mouseReleased(int x, int y, int button){
 		}
 	}
 	else if (show_menu) {
-		for (int i = 0; i < num_video_items; i++) {
+        for (size_t i = 0; i < num_video_items; i++) {
 			if (x >= video_items[i].itemBox.x &&
 				x <= video_items[i].itemBox.x + video_items[i].itemBox.width &&
 				y >= video_items[i].itemBox.y &&
@@ -583,20 +466,10 @@ void ofApp::mouseReleased(int x, int y, int button){
 }
 
 //--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y){
-
-}
-
-//--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
 	// update video sizes
 	video_width = ofGetWidth();
-	video_height = ofGetWidth() / 1.777776;
+    video_height = ofGetWidth() / 1.777776f;
 	video_pos_y = (ofGetHeight() / 2) - (video_height / 2);
 	
 	// update control bar size
@@ -606,12 +479,109 @@ void ofApp::windowResized(int w, int h){
 	updateMenuItems();
 }
 
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
 
+//--------------------------------------------------------------
+void ofApp::getMetaData(string path, videoItem& vid )
+{
+    ifstream vidMetaData;
+
+    string fileToOpen = path.replace(path.end() - 4, path.end(), ".txt");
+
+    vidMetaData.open( ofToDataPath(fileToOpen).c_str() );
+    ofLog(OF_LOG_VERBOSE) << "metadata file opened: " << vidMetaData.is_open();
+
+    getline(vidMetaData, vid.title);
+    ofLog(OF_LOG_VERBOSE) << "video title found: " << vid.title;
+
+    getline(vidMetaData, vid.description);
+    ofLog(OF_LOG_VERBOSE) << "video description found: " << vid.description;
+
+    vidMetaData.close();
 }
 
 //--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
+void ofApp::setupGui()
+{
+    gui.setup("settings");
+    gui.add(controlbar_show_length.set("controbar_show_length", 3000.0, 0.0, 10000.0));
+    gui.add(controlbar_anim_length.set("controlbar_anim_length", 500.0, 0.0, 10000.0));
+    gui.add(icon_padding.set("icon_padding", 10.0, 0.0, 50.0));
+    gui.add(fonts_space_between_words.set("fonts_space_between_words", 8.5, 0.0, 50.0));
+    gui.add(menu_margin_x.set("menu_margin_x", 0.15f, 0.0, 1.0));
+    gui.add(menu_margin_y.set("menu_margin_y", 0.1f, 0.0, 1.0));
+    gui.add(fonts_title_color.set("font_title_color", ofColor(252, 69, 19), ofColor(0, 0), ofColor(255, 255)));
+    gui.add(icon_highlight_color.set("icon_highlight_color", ofColor(252, 69, 19), ofColor(0, 0), ofColor(255, 255)));
+    gui.add(menu_background_filename.set("menu_background_img_filename", "backgrounds/background_menu.jpg"));
+    gui.add(font_main_normal_filename.set("font_main_regular_filename_ttf", "fonts/opensans-regular.ttf"));
+    gui.add(font_main_italic_filename.set("font_main_italic_filename_ttf", "fonts/opensans-italic.ttf"));
+    gui.add(font_stats_filename.set("font_stats_filename_ttf", "fonts/opensans-regular.ttf"));
 
+    // Attempt to load XML settings from file
+    gui.loadFromFile("settings.xml");
 }
+
+//--------------------------------------------------------------
+void ofApp::setupVideos()
+{
+    // read the directory for the images - we know that they are named in seq
+    string path = "videos/";
+    ofDirectory dir(path);
+    dir.allowExt("mp4");
+
+    size_t nFiles = dir.listDir();
+    if (nFiles) {
+        for (size_t i = 0; i < dir.size(); i++) {
+            ofLog(OF_LOG_VERBOSE) << "Video found: " << dir.getPath(i);
+            videoItem vid;
+
+            vid.videoFile = dir.getPath(i);
+
+            string imageFileTemp = dir.getPath(i);
+            vid.imageFile = imageFileTemp.replace(imageFileTemp.end() - 4, imageFileTemp.end(), ".jpg");
+
+            getMetaData(dir.getPath(i),vid);
+            video_items.push_back(vid);
+        }
+    }
+    else ofLog(OF_LOG_WARNING) << "Could not find folder";
+}
+
+//--------------------------------------------------------------
+void ofApp::setupIcons()
+{
+    // icons
+    icon_size = 64;
+    icon_size_larger = 80;
+    icon_play_select.load("icons/play_select.png");
+    icon_play.load("icons/play.png");
+    icon_pause.load("icons/pause.png");
+    icon_back.load("icons/back.png");
+    icon_play_select.resize(icon_size_larger, icon_size_larger);
+    icon_play.resize(icon_size, icon_size);
+    icon_pause.resize(icon_size, icon_size);
+    icon_back.resize(icon_size, icon_size);
+    icon_playpause_hover = false;
+
+    controlbar_width = ofGetWidth();
+    controlbar_height = icon_size * 2.5f;
+    controlbar_pos_y = ofGetHeight();
+}
+
+//--------------------------------------------------------------
+void ofApp::setupFonts()
+{
+    ofTrueTypeFont::setGlobalDpi(72);
+    font_stats.load(static_cast<string>(font_stats_filename), 14);
+    font_stats.setLineHeight(18.0f);
+    font_stats.setLetterSpacing(1.037f);
+
+    font_main_normal.load(static_cast<string>(font_main_normal_filename), 24);
+    font_main_normal.setLineHeight(30.0f);
+    font_main_normal.setLetterSpacing(1);
+
+    font_main_italic.load(static_cast<string>(font_main_italic_filename), 24);
+    font_main_italic.setLineHeight(30.0f);
+    font_main_italic.setLetterSpacing(1);
+}
+
+//--------------------------------------------------------------
