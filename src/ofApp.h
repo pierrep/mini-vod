@@ -94,10 +94,7 @@ class ofApp : public ofBaseApp{
 		// timers
 
 		float			controlbar_start_time;
-		float			controlbar_timer_end;
-
 		float			menu_start_time;
-		float			menu_timer_end;
 
 		// menu
 

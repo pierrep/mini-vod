@@ -21,9 +21,7 @@ void ofApp::setup(){
 	show_controls = false;
 
 	// timers
-	controlbar_timer_end = false;
 	controlbar_start_time = ofGetElapsedTimeMillis();
-	menu_timer_end = false;
 	menu_start_time = ofGetElapsedTimeMillis();
 
 	// menu
@@ -40,7 +38,7 @@ void ofApp::launchVideo(unsigned int videoId) {
 	video_player.load(video_items[videoId].videoFile);
 	video_player.setLoopState(OF_LOOP_NONE);
 	video_player.play();
-	controlbar_timer_end = false;
+
 	controlbar_start_time = ofGetElapsedTimeMillis();
 	show_controls = true;
 	paused = false;
@@ -73,7 +71,6 @@ void ofApp::updateMenuItems() {
 //--------------------------------------------------------------
 
 void ofApp::setVideoPlaypause() {
-	controlbar_timer_end = false;
 	controlbar_start_time = ofGetElapsedTimeMillis();
 	paused = !paused;
 	if (paused) {
@@ -85,7 +82,6 @@ void ofApp::setVideoPlaypause() {
 void ofApp::returnToMenu() {
 	show_menu = true;
 	video_player.stop();
-	menu_timer_end = false;
 	menu_start_time = ofGetElapsedTimeMillis();
 }
 
@@ -107,10 +103,6 @@ void ofApp::drawVideo() {
 
 	float hide_anim_timer = ofMap(controlbar_timer, controlbar_show_length, controlbar_show_length + controlbar_anim_length, 1.0, 0.0);
 	float hide_back_anim_timer = ofMap(controlbar_timer, controlbar_show_length, controlbar_show_length + controlbar_anim_length, 0.0, 1.0);
-	
-	if (controlbar_timer >= controlbar_show_length) {
-		controlbar_timer_end = true;
-	}
 
 	if (video_player.isPlaying() && show_stats) {
 		font_stats.drawString("Video is playing", 30, 650);
@@ -253,10 +245,6 @@ void ofApp::drawMenu() {
 	// position variables for drawing strings
 	float string_x, string_y;
 
-    if (menu_timer >= 1500.0f) {
-		menu_timer_end = true;
-	}
-
 	// draw background
 	ofEnableAlphaBlending();
 	ofSetColor(255, 255, 255, 255 * fade_in_timer);
@@ -339,7 +327,6 @@ void ofApp::drawMenu() {
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-	ofSetColor(255);
 	
 	if (show_menu) {
 		drawMenu();
@@ -349,6 +336,7 @@ void ofApp::draw(){
 	}
 
 	if (show_stats) {
+        ofSetColor(255);
 		gui.draw();
 		
 		font_stats.drawString("Controlbar start time: " + to_string(controlbar_start_time), 30, ofGetHeight() - 160);
@@ -413,7 +401,6 @@ void ofApp::mouseDragged(int x, int y, int button){
 			y <= progress_bar.y + progress_bar.height) {
 
 			video_player.setPosition((x - progress_bar.x) / progress_bar.width);
-			controlbar_timer_end = false;
 			controlbar_start_time = ofGetElapsedTimeMillis();
 		}
 	}
@@ -438,7 +425,6 @@ void ofApp::mouseReleased(int x, int y, int button){
 			y <= progress_bar.y + progress_bar.height) {
 
 			video_player.setPosition((x - progress_bar.x) / progress_bar.width);
-			controlbar_timer_end = false;
 			controlbar_start_time = ofGetElapsedTimeMillis();
 		}
 		else if (x >= icon_back_background.x &&
